@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina Library | Discover Your Next Favorite Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-book-open-reader gradient-text"></i>
+                Lumina<span class="gradient-text">Library</span>
+            </a>
+            <div id="nav-links" style="display: flex; gap: 1rem; align-items: center;">
+                <a href="pages/login.html" class="btn btn-outline">Sign In</a>
+                <a href="pages/register.html" class="btn btn-primary">Join Now</a>
+            </div>
+        </nav>
+
+        <header style="padding: 4rem 0; text-align: center;" class="animate-fade">
+            <h1 style="font-size: 3.5rem; margin-bottom: 1.5rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                Explore a World of <span class="gradient-text">Knowledge</span> and Imagination
+            </h1>
+            <p style="color: var(--text-muted); font-size: 1.25rem; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Borrow from thousands of titles, manage your loans, and join a community of readers. All in one place.
+            </p>
+            
+            <div class="glass" style="max-width: 700px; margin: 0 auto; padding: 0.75rem; display: flex; gap: 0.75rem;">
+                <div style="flex: 1; position: relative; display: flex; align-items: center;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1rem; color: var(--text-muted);"></i>
+                    <input type="text" id="search-input" placeholder="Search titles, authors, or ISBN..." 
+                           style="padding-left: 2.75rem; border: none; background: transparent;">
+                </div>
+                <select id="category-filter" style="width: auto; border: none; background: rgba(255,255,255,0.05);">
+                    <option value="">All Categories</option>
+                </select>
+                <button class="btn btn-primary" id="search-btn">Find Books</button>
+            </div>
+        </header>
+
+        <section id="books-section" style="padding-bottom: 5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                <h2 style="font-size: 2rem;">Current <span class="gradient-text">Collection</span></h2>
+            </div>
+            <div id="books-grid" class="book-grid">
+                <!-- Skeleton Loading -->
+                <div class="glass book-card" style="height: 400px; opacity: 0.5;"></div>
+                <div class="glass book-card" style="height: 400px; opacity: 0.5;"></div>
+                <div class="glass book-card" style="height: 400px; opacity: 0.5;"></div>
+            </div>
+        </section>
+    </div>
+
+    <footer style="padding: 4rem 0; border-top: 1px solid var(--glass-border); text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+        <p>&copy; 2026 Lumina Library System. Built with <i class="fa-solid fa-heart" style="color: var(--danger);"></i> for readers everywhere.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        async function borrowBook(id) {
+            if (!auth.isLoggedIn()) {
+                window.location.href = 'pages/login.html';
+                return;
+            }
+            try {
+                const user = auth.getUser();
+                await api.loans.borrow(id, user._id);
+                alert('Book borrowed successfully! Check your dashboard.');
+                location.reload();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

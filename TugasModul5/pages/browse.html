@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Books | Lumina Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="../index.html" class="logo">Lumina<span class="gradient-text">Library</span></a>
+            <div id="nav-links">
+                <a href="dashboard.html" class="btn btn-outline">Dashboard</a>
+                <button onclick="auth.logout()" class="btn btn-primary">Logout</button>
+            </div>
+        </nav>
+
+        <header style="padding: 2rem 0; text-align: center;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Explore Our <span class="gradient-text">Collection</span></h1>
+            <div class="glass" style="max-width: 600px; margin: 0 auto; padding: 0.5rem; display: flex; gap: 0.5rem;">
+                <input type="text" id="search-input" placeholder="Search by title, author, or ISBN..." style="border: none; background: transparent;">
+                <button class="btn btn-primary" id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </header>
+
+        <section id="books-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 2rem;">Available Books</h2>
+                <select id="category-filter" style="width: auto;">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div id="books-grid" class="book-grid"></div>
+        </section>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const booksGrid = document.getElementById('books-grid');
+            const categoryFilter = document.getElementById('category-filter');
+
+            // Load Categories
+            try {
+                const cachedCats = localStorage.getItem('categories');
+                if (cachedCats) {
+                    JSON.parse(cachedCats).forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.category;
+                        option.textContent = cat.category;
+                        categoryFilter.appendChild(option);
+                    });
+                } else {
+                    const catRes = await api.books.getCategories();
+                    if (catRes.data) {
+                        localStorage.setItem('categories', JSON.stringify(catRes.data));
+                        catRes.data.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = cat.category;
+                            option.textContent = cat.category;
+                            categoryFilter.appendChild(option);
+                        });
+                    }
+                }
+            } catch (err) { console.error(err); }
+
+            async function loadBooks(params = '') {
+                booksGrid.innerHTML = '<div class="glass book-card" style="height: 400px; background: rgba(255,255,255,0.05);"></div>'.repeat(3);
+                try {
+                    const response = await api.books.getAll(params);
+                    const books = response.data && response.data.books ? response.data.books : response.data;
+                    
+                    booksGrid.innerHTML = '';
+                    if (!books || !Array.isArray(books) || books.length === 0) {
+                        booksGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 4rem;">No books found.</p>';
+                        return;
+                    }
+
+                    books.forEach(book => {
+                        const stock = book.availableCopies !== undefined ? book.availableCopies : (book.stock || 0);
+                        const card = document.createElement('div');
+                        card.className = 'glass book-card animate-fade';
+                        card.innerHTML = `
+                            <span class="book-badge ${stock > 0 ? 'badge-available' : 'badge-unavailable'}">
+                                ${stock > 0 ? 'Available (' + stock + ')' : 'Out of Stock'}
+                            </span>
+                            <h3 style="margin-bottom: 0.5rem;">${book.title}</h3>
+                            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;">by ${book.author}</p>
+                            <div style="margin-bottom: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                                <div><i class="fa-solid fa-bookmark" style="width: 20px;"></i> ${book.category}</div>
+                                <div><i class="fa-solid fa-barcode" style="width: 20px;"></i> ${book.isbn}</div>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%;" onclick="borrowBook('${book._id}')" ${stock === 0 ? 'disabled' : ''}>
+                                ${stock > 0 ? 'Borrow Now' : 'Waitlisted'}
+                            </button>
+                        `;
+                        booksGrid.appendChild(card);
+                    });
+                } catch (err) {
+                    booksGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">Failed to load books: ${err.message}</p>`;
+                }
+            }
+
+            loadBooks();
+
+            document.getElementById('search-btn').onclick = () => {
+                const q = document.getElementById('search-input').value;
+                loadBooks(`?search=${q}`);
+            };
+
+            categoryFilter.onchange = (e) => {
+                const cat = e.target.value;
+                loadBooks(cat ? `?category=${cat}` : '');
+            };
+        });
+
+        async function borrowBook(id) {
+            try {
+                const user = auth.getUser();
+                if (!user || !user._id) throw new Error('Please login first.');
+                
+                await api.loans.borrow(id, user._id);
+                alert('Book borrowed successfully!');
+                location.reload();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

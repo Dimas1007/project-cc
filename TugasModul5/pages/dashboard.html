@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Lumina Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .stat-card { padding: 1.75rem; transition: var(--transition); }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .stat-icon { 
+            width: 50px; height: 50px; border-radius: 1rem; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1.25rem;
+            background: rgba(99, 102, 241, 0.1); color: var(--primary);
+        }
+        .status-pill {
+            padding: 0.375rem 0.875rem; border-radius: 99px; 
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar glass">
+            <a href="../index.html" class="logo" style="margin-bottom: 3.5rem;">
+                <i class="fa-solid fa-book-open-reader gradient-text"></i>
+                <span>Lumina<span class="gradient-text">Lib</span></span>
+            </a>
+            
+            <nav style="flex-direction: column; align-items: stretch; padding: 0;">
+                <div id="common-nav">
+                    <a href="#" class="nav-link active" data-view="overview"><i class="fa-solid fa-house"></i> <span>Overview</span></a>
+                </div>
+                
+                <div id="member-nav" style="display: none;">
+                    <a href="#" class="nav-link" data-view="my-loans"><i class="fa-solid fa-book-bookmark"></i> <span>My Loans</span></a>
+                    <a href="#" class="nav-link" data-view="my-fines"><i class="fa-solid fa-circle-exclamation"></i> <span>My Fines</span></a>
+                </div>
+                
+                <div id="admin-nav" style="display: none;">
+                    <div style="padding: 1.5rem 1.25rem 0.75rem; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Management</div>
+                    <a href="#" class="nav-link" data-view="manage-books"><i class="fa-solid fa-book"></i> <span>Books</span></a>
+                    <a href="#" class="nav-link" data-view="all-loans"><i class="fa-solid fa-handshake"></i> <span>All Loans</span></a>
+                    <a href="#" class="nav-link" data-view="manage-fines"><i class="fa-solid fa-money-bill-transfer"></i> <span>Global Fines</span></a>
+                    <a href="#" class="nav-link" data-view="members"><i class="fa-solid fa-user-group"></i> <span>Members</span></a>
+                </div>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                <div id="user-info" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding: 0 0.5rem;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800;">U</div>
+                    <div style="overflow: hidden;">
+                        <div id="user-name" style="font-weight: 600; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User Name</div>
+                        <div id="user-role" style="font-size: 0.75rem; color: var(--text-muted); text-transform: capitalize;">Role</div>
+                    </div>
+                </div>
+                <button onclick="auth.logout()" class="btn btn-outline" style="width: 100%; justify-content: flex-start; border-color: rgba(239, 68, 68, 0.2); color: #f87171;">
+                    <i class="fa-solid fa-power-off"></i> <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                <div>
+                    <h1 id="view-title" style="font-size: 2.25rem; margin-bottom: 0.5rem;">Dashboard</h1>
+                    <p id="view-subtitle" style="color: var(--text-muted);">Manage your library activities here.</p>
+                </div>
+                <div id="header-actions"></div>
+            </header>
+
+            <div id="dashboard-view-container" class="animate-fade">
+                <!-- Content injected here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="book-modal" class="modal-backdrop">
+        <div class="glass modal-content animate-fade">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 id="modal-title">Add New Book</h2>
+                <button onclick="closeModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.25rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="book-form">
+                <input type="hidden" id="book-id">
+                <div class="form-group"><label>Book Title</label><input type="text" id="book-title" placeholder="e.g. The Great Gatsby" required></div>
+                <div class="form-group"><label>Author Name</label><input type="text" id="book-author" placeholder="e.g. F. Scott Fitzgerald" required></div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group"><label>Category</label><input type="text" id="book-category" placeholder="Fiction" required></div>
+                    <div class="form-group"><label>Total Copies</label><input type="number" id="book-stock" required min="1" placeholder="10"></div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group"><label>Publisher</label><input type="text" id="book-publisher" placeholder="Scribner" required></div>
+                    <div class="form-group"><label>Year</label><input type="number" id="book-year" required placeholder="1925"></div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group"><label>ISBN</label><input type="text" id="book-isbn" required placeholder="978-0743273565"></div>
+                    <div class="form-group"><label>Total Pages</label><input type="number" id="book-pages" required placeholder="180"></div>
+                </div>
+                
+                <div class="form-group"><label>Shelf Location</label><input type="text" id="book-location" required placeholder="A-102"></div>
+                <div class="form-group"><label>Description</label><textarea id="book-desc" required placeholder="Enter a brief summary..." rows="3"></textarea></div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1.5;">Save Book Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
